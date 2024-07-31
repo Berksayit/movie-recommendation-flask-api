@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Bilgisi</title>
+</head>
+<body>
+    <h1>Film Bilgisi Arama</h1>
+    <form action="/search" method="get">
+        <label for="title">Film Adı:</label>
+        <input type="text" id="title" name="title" required>
+        <button type="submit">Ara</button>
+    </form>
+
+    {% if movie %}
+        <h2>Film Bilgileri</h2>
+        <p><strong>Film Adı:</strong> {{ movie['Film Adı'] }}</p>
+        <p><strong>Yıl:</strong> {{ movie['Yıl'] }}</p>
+        <p><strong>Tür:</strong> {{ movie['Tür'] }}</p>
+        <p><strong>Yönetmen:</strong> {{ movie['Yönetmen'] }}</p>
+        <p><strong>Konu:</strong> {{ movie['Konu'] }}</p>
+        <p><strong>Oyuncular:</strong> {{ movie['Oyuncular'] }}</p>
+        <p><strong>IMDb Reytingi:</strong> {{ movie['IMDb Reytingi'] }}</p>
+    {% elif error %}
+        <p><strong>Hata:</strong> {{ error }}</p>
+    {% endif %}
+</body>
+</html>
