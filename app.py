@@ -46,8 +46,7 @@ def search_api():
             return jsonify({'error': data['Error']}), 400
     except requests.RequestException as e:
         # Handle HTTP request errors
-        return jsonify({'error': f"HTTP Error: {e}"}), 500
+        return jsonify({'error': f"HTTP Error: {e}"}),500
 
 if __name__ == '__main__':
     app.run(debug=True) 
-    
