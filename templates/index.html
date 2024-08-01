@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Film Bilgisi</title>
+    <title>Movie Search</title>
 </head>
 <body>
-    <h1>Film Bilgisi Arama</h1>
+    <h1>Movie Search</h1>
     <form action="/search" method="get">
-        <label for="title">Film Adı:</label>
-        <input type="text" id="title" name="title" required>
-        <button type="submit">Ara</button>
+        <input type="text" name="title" placeholder="Enter movie title">
+        <button type="submit">Search</button>
     </form>
 
     {% if movie %}
-        <h2>Film Bilgileri</h2>
-        <p><strong>Film Adı:</strong> {{ movie['Film Adı'] }}</p>
-        <p><strong>Yıl:</strong> {{ movie['Yıl'] }}</p>
-        <p><strong>Tür:</strong> {{ movie['Tür'] }}</p>
-        <p><strong>Yönetmen:</strong> {{ movie['Yönetmen'] }}</p>
-        <p><strong>Konu:</strong> {{ movie['Konu'] }}</p>
-        <p><strong>Oyuncular:</strong> {{ movie['Oyuncular'] }}</p>
-        <p><strong>IMDb Reytingi:</strong> {{ movie['IMDb Reytingi'] }}</p>
+        <h2>Movie Details</h2>
+        <p><strong>Title:</strong> {{ movie.Title }}</p>
+        <p><strong>Year:</strong> {{ movie.Year }}</p>
+        <p><strong>Genre:</strong> {{ movie.Genre }}</p>
+        <p><strong>Director:</strong> {{ movie.Director }}</p>
+        <p><strong>Plot:</strong> {{ movie.Plot }}</p>
+        <p><strong>Actors:</strong> {{ movie.Actors }}</p>
+        <p><strong>IMDb Rating:</strong> {{ movie['IMDb Rating'] }}</p>
     {% elif error %}
-        <p><strong>Hata:</strong> {{ error }}</p>
+        <p style="color: red;">{{ error }}</p>
     {% endif %}
 </body>
 </html>
