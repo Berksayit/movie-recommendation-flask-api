@@ -1,21 +1,28 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import requests
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
+load_dotenv()
+
 # OMDb API key
-OMDB_API_KEY = '77ae9d39'
+OMDB_API_KEY = os.getenv('OMDB_API_KEY')
 OMDB_API_URL = 'http://www.omdbapi.com/'
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/search', methods=['GET'])
-def search():
-    title = request.args.get('title')
+
+
+@app.route('/api/search', methods=['POST'])
+def search_api():
+    data = request.get_json()
+    title = data.get('title')
     if not title:
-        return render_template('index.html', error="Movie title is required.")
+        return jsonify({'error': 'Movie title is required.'}), 400
     
     # Send request to OMDb API
     try:
@@ -34,12 +41,12 @@ def search():
                 "Actors": data.get('Actors'),
                 "IMDb Rating": data.get('imdbRating')
             }
-            return render_template('index.html', movie=movie_info)
+            return jsonify(movie_info)
         else:
-            return render_template('index.html', error=data['Error'])
+            return jsonify({'error': data['Error']}), 400
     except requests.RequestException as e:
         # Handle HTTP request errors
-        return render_template('index.html', error=f"HTTP Error: {e}")
+        return jsonify({'error': f"HTTP Error: {e}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
