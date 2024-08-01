@@ -1,90 +1,63 @@
 
-
+```markdown
 # Movie Recommendation Flask API
 
-## Description
-
-The Movie Recommendation Flask API is a web service that provides movie recommendations to users. Built with Flask, this API allows users to receive suggestions based on various criteria from a movie database. The project is built on Python and the Flask framework.
+This project is a Flask web application that utilizes the OMDb API to provide movie recommendations and display movie information. Users can enter a movie title to retrieve relevant details.
 
 ## Features
 
-- **Movie Recommendations**: Users can receive movie recommendations based on specific criteria.
-- **RESTful API**: Provides and retrieves data through HTTP requests.
-- **Simple and Quick Setup**: Easily set up with a minimal Flask-based structure.
+- Allows users to enter a movie title and fetch information from the OMDb API.
+- Displays details such as title, year, genre, director, plot, actors, and IMDb rating.
 
-## Getting Started
+## Technologies
 
-### Requirements
+- **Flask**: Python web framework.
+- **Requests**: For making HTTP requests.
+- **python-dotenv**: For managing environment variables.
+- **Tailwind CSS**: For user interface styling.
 
-- Python 3.7 or higher
-- Flask
-- Flask-RESTful
-- Other necessary Python packages
+## Installation
 
-### Installation
+### Prerequisites
 
-1. **Clone the Repository**
+- Python 3.6 or higher
+- pip (Python package manager)
 
-   ```bash
-   git clone https://github.com/username/movie-recommendation-flask-api.git
-   cd movie-recommendation-flask-api
-   ```
+### Steps
 
-2. **Create a Virtual Environment**
-
-   Create and activate a Python virtual environment:
+1. **Create and Activate a Virtual Environment:**
 
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Unix/macOS
+   source venv/bin/activate  # MacOS/Linux
    venv\Scripts\activate     # Windows
    ```
 
-3. **Install Dependencies**
+2. **Install Required Packages:**
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Run the Application**
+3. **Set Up Environment Variables:**
 
-   ```bash
-   python app.py
+   Create a `.env` file in the root directory of your project and add your OMDb API key in the following format:
+
+   ```env
+   OMDB_API_KEY=your_api_key_here
    ```
 
-   By default, the API will run at `http://127.0.0.1:5000`.
+4. **Run the Application:**
 
-### Usage
+   ```bash
+   flask run
+   ```
 
-You can test your API by making various HTTP requests. Here are a few examples:
+   Visit `http://127.0.0.1:5000` in your web browser to view the application.
 
-- **Get Movie Recommendations**
+## Usage
 
-  ```bash
-  curl -X GET http://127.0.0.1:5000/recommendations?genre=action
-  ```
-
-  This request will return recommendations for action genre movies.
-
-## API Reference
-
-- **GET /recommendations**
-
-  - **Parameters**:
-    - `genre` (optional): Genre of the movie (e.g., `action`, `comedy`)
-    - `rating` (optional): Movie rating (e.g., `7`, `8`)
-
-  - **Response**:
-    ```json
-    {
-      "recommendations": [
-        {
-          "title": "Movie Title",
-          "genre": "Movie Genre",
-          "rating": "Movie Rating"
-        },
-        ...
-      ]
-    }
-    ```
-
+1. Open the application in your web browser.
+2. Enter a movie title in the "Enter movie title" field.
+3. Click the "Search" button.
+4. Movie details (title, year, genre, director, plot, actors, IMDb rating) will be displayed on the screen.
