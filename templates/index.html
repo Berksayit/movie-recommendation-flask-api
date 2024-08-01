@@ -4,25 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Movie Search</h1>
-    <form action="/search" method="get">
-        <input type="text" name="title" placeholder="Enter movie title">
-        <button type="submit">Search</button>
-    </form>
+<body class="bg-gray-100 text-gray-900">
+    <div class="container mx-auto p-6">
+        <h1 class="text-4xl font-bold mb-6 text-center">Movie Search</h1>
+        <div class="flex justify-center mb-8">
+            <input id="movieTitle" type="text" placeholder="Enter movie title" class="w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="searchButton" class="ml-4 px-6 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Search</button>
+        </div>
 
-    {% if movie %}
-        <h2>Movie Details</h2>
-        <p><strong>Title:</strong> {{ movie.Title }}</p>
-        <p><strong>Year:</strong> {{ movie.Year }}</p>
-        <p><strong>Genre:</strong> {{ movie.Genre }}</p>
-        <p><strong>Director:</strong> {{ movie.Director }}</p>
-        <p><strong>Plot:</strong> {{ movie.Plot }}</p>
-        <p><strong>Actors:</strong> {{ movie.Actors }}</p>
-        <p><strong>IMDb Rating:</strong> {{ movie['IMDb Rating'] }}</p>
-    {% elif error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        <div id="movieDetails" class="bg-white p-6 rounded-lg shadow-md hidden">
+            <h2 class="text-2xl font-semibold mb-4">Movie Details</h2>
+            <p id="title" class="mb-2"></p>
+            <p id="year" class="mb-2"></p>
+            <p id="genre" class="mb-2"></p>
+            <p id="director" class="mb-2"></p>
+            <p id="plot" class="mb-2"></p>
+            <p id="actors" class="mb-2"></p>
+            <p id="imdbRating" class="mb-2"></p>
+        </div>
+
+        <p id="errorMessage" class="text-red-500 text-center hidden"></p>
+    </div>
+
+    <script>
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const title = document.getElementById('movieTitle').value;
+
+            fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title: title }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('movieDetails').classList.add('hidden');
+                    document.getElementById('errorMessage').innerText = data.error;
+                    document.getElementById('errorMessage').classList.remove('hidden');
+                } else {
+                    document.getElementById('title').innerText = `Title: ${data.Title}`;
+                    document.getElementById('year').innerText = `Year: ${data.Year}`;
+                    document.getElementById('genre').innerText = `Genre: ${data.Genre}`;
+                    document.getElementById('director').innerText = `Director: ${data.Director}`;
+                    document.getElementById('plot').innerText = `Plot: ${data.Plot}`;
+                    document.getElementById('actors').innerText = `Actors: ${data.Actors}`;
+                    document.getElementById('imdbRating').innerText = `IMDb Rating: ${data['IMDb Rating']}`;
+
+                    document.getElementById('movieDetails').classList.remove('hidden');
+                    document.getElementById('errorMessage').classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                document.getElementById('movieDetails').classList.add('hidden');
+                document.getElementById('errorMessage').innerText = 'An error occurred while fetching the movie details.';
+                document.getElementById('errorMessage').classList.remove('hidden');
+            });
+        });
+    </script>
 </body>
 </html>
