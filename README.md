@@ -29,7 +29,7 @@ To run this application locally, follow these steps:
 
 2. **Set up a virtual environment**:
     ```bash
-    python -m venv venv
+    python -m venv env
     source venv/bin/activate  # On Windows use: venv\Scripts\activate
     ```
 
@@ -66,9 +66,6 @@ To run this application locally, follow these steps:
 - **templates/index.html**: HTML template for the front-end interface.
 - **.env**: Environment file for storing API keys.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
