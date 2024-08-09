@@ -10,6 +10,11 @@
     <div class="container mx-auto p-6">
         <h1 class="text-4xl font-bold mb-6 text-center">Movie Search</h1>
         
+        <!-- Logout Button -->
+        <div class="flex justify-end mb-8">
+            <a href="/logout" class="px-6 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">Logout</a>
+        </div>
+
         <div class="flex justify-center mb-8">
             <input id="movieTitle" type="text" placeholder="Enter movie title" class="w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="searchButton" class="ml-4 px-6 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Search</button>
@@ -37,8 +42,22 @@
     </div>
 
     <script>
+        // Simulate logout on window unload
+        window.addEventListener('beforeunload', function() {
+            fetch('/logout', { method: 'GET' });
+        });
+
         document.getElementById('searchButton').addEventListener('click', function() {
-            const title = document.getElementById('movieTitle').value;
+            const title = document.getElementById('movieTitle').value.trim();
+
+            if (!title) {
+                document.getElementById('errorMessage').innerText = 'Please enter a movie title.';
+                document.getElementById('errorMessage').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('movieDetails').classList.add('hidden');
 
             fetch('/api/search', {
                 method: 'POST',
@@ -50,7 +69,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    document.getElementById('movieDetails').classList.add('hidden');
                     document.getElementById('errorMessage').innerText = data.error;
                     document.getElementById('errorMessage').classList.remove('hidden');
                 } else {
@@ -63,11 +81,9 @@
                     document.getElementById('imdbRating').innerText = `IMDb Rating: ${data['IMDb Rating']}`;
 
                     document.getElementById('movieDetails').classList.remove('hidden');
-                    document.getElementById('errorMessage').classList.add('hidden');
                 }
             })
             .catch(error => {
-                document.getElementById('movieDetails').classList.add('hidden');
                 document.getElementById('errorMessage').innerText = 'An error occurred while fetching the movie details.';
                 document.getElementById('errorMessage').classList.remove('hidden');
             });
@@ -78,7 +94,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    document.getElementById('top20Movies').classList.add('hidden');
                     document.getElementById('errorMessage').innerText = data.error;
                     document.getElementById('errorMessage').classList.remove('hidden');
                 } else {
@@ -90,11 +105,9 @@
                         top20List.appendChild(li);
                     });
                     document.getElementById('top20Movies').classList.remove('hidden');
-                    document.getElementById('errorMessage').classList.add('hidden');
                 }
             })
             .catch(error => {
-                document.getElementById('top20Movies').classList.add('hidden');
                 document.getElementById('errorMessage').innerText = 'An error occurred while fetching the top 20 movies.';
                 document.getElementById('errorMessage').classList.remove('hidden');
             });
