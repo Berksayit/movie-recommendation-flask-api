@@ -1,37 +1,47 @@
 from . import app, Config
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 import requests
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Secret key for session management
-app.permanent_session_lifetime = timedelta(minutes=15)  # Set session lifetime to 15 minutes
+app.secret_key = os.urandom(24)  
+app.permanent_session_lifetime = timedelta(minutes=15)  
 
-# SQLAlchemy setup
-DATABASE_URL = 'sqlite:///users.db'
-Base = declarative_base()
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+DATABASE_URL_USERS = 'sqlite:///users.db'
+BaseUsers = declarative_base()
+engine_users = create_engine(DATABASE_URL_USERS)
+SessionLocalUsers = sessionmaker(autocommit=False, autoflush=False, bind=engine_users)
 
-class User(Base):
+DATABASE_URL_SEARCH = 'sqlite:///search.db'
+BaseSearch = declarative_base()
+engine_search = create_engine(DATABASE_URL_SEARCH)
+SessionLocalSearch = sessionmaker(autocommit=False, autoflush=False, bind=engine_search)
+
+class User(BaseUsers):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
 
-# Initialize database
+class SearchHistory(BaseSearch):
+    __tablename__ = 'search_history'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String, nullable=False)
+    search_time = Column(String, nullable=False)
+    movie_title = Column(String, nullable=False)
+
 def init_db():
-    Base.metadata.create_all(engine)
+    BaseUsers.metadata.create_all(engine_users)  
+    BaseSearch.metadata.create_all(engine_search)  
 
 init_db()
 
@@ -52,7 +62,7 @@ def register():
         password = request.form['password']
         hashed_password = generate_password_hash(password)
         
-        db_session = SessionLocal()
+        db_session = SessionLocalUsers()
         
         existing_user = db_session.query(User).filter((User.username == username) | (User.email == email)).all()
         if existing_user:
@@ -82,10 +92,10 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        identifier = request.form['identifier']  # Username or email
+        identifier = request.form['identifier']  
         password = request.form['password']
         
-        db_session = SessionLocal()
+        db_session = SessionLocalUsers()
         
         user = db_session.query(User).filter((User.username == identifier) | (User.email == identifier)).first()
         
@@ -120,7 +130,10 @@ def search_api():
     title = data.get('title')
     if not title:
         return jsonify({'error': 'Movie title is required.'}), 400
-    
+
+    db_session_users = SessionLocalUsers()  
+    db_session_search = SessionLocalSearch()  
+
     try:
         response = requests.get(Config["OMDB_API_URL"], params={'t': title, 'apikey': Config["OMDB_API_KEY"]})
         response.raise_for_status()
@@ -136,11 +149,64 @@ def search_api():
                 "Actors": data.get('Actors'),
                 "IMDb Rating": data.get('imdbRating')
             }
+
+            search_history = SearchHistory(
+                username=session['username'],
+                search_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                movie_title=title
+            )
+            db_session_search.add(search_history)
+            db_session_search.commit()
+
             return jsonify(movie_info)
         else:
             return jsonify({'error': data['Error']}), 400
     except requests.RequestException as e:
         return jsonify({'error': f"HTTP Error: {e}"}), 500
+    finally:
+        db_session_users.close()
+        db_session_search.close()
+
+@app.route('/api/most_searched_today', methods=['GET'])
+def most_searched_today():
+    if not is_logged_in():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    search_session = SessionLocalSearch()
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    try:
+        results = search_session.query(SearchHistory.movie_title, func.count(SearchHistory.movie_title).label('count')) \
+                                .filter(SearchHistory.search_time.startswith(today)) \
+                                .group_by(SearchHistory.movie_title) \
+                                .order_by(func.count(SearchHistory.movie_title).desc()) \
+                                .first()
+        
+        if results:
+            movie_title = results.movie_title
+            response = requests.get(Config["OMDB_API_URL"], params={'t': movie_title, 'apikey': Config["OMDB_API_KEY"]})
+            response.raise_for_status()
+            data = response.json()
+
+            if data['Response'] == 'True':
+                movie_info = {
+                    "Title": data.get('Title'),
+                    "Year": data.get('Year'),
+                    "Genre": data.get('Genre'),
+                    "Director": data.get('Director'),
+                    "Plot": data.get('Plot'),
+                    "Actors": data.get('Actors'),
+                    "IMDb Rating": data.get('imdbRating')
+                }
+                return jsonify(movie_info)
+            else:
+                return jsonify({'error': data['Error']}), 400
+        else:
+            return jsonify({'error': 'No searches found for today'}), 404
+    except requests.RequestException as e:
+        return jsonify({'error': f"HTTP Error: {e}"}), 500
+    finally:
+        search_session.close()
 
 @app.route('/api/top20', methods=['GET'])
 def top20_movies():
